@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operux · Arquitectura Operativa</title>
+<meta name="description" content="Diseñamos la infraestructura operativa que elimina la dependencia del fundador mediante sistemas, automatización e inteligencia artificial.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root{
+    --black:#0A0A0A;
+    --white:#FAFAFA;
+    --red:#C2102A;
+    --red-light:#E0102A;
+    --gray:#BFBFBF;
+    --s8:8px;--s16:16px;--s24:24px;--s32:32px;--s48:48px;--s64:64px;--s96:96px;--s128:128px;--s160:160px;--s192:192px;--s256:256px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--black);
+    color:var(--white);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--red);color:var(--white);}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 32px;}
+  @media(max-width:768px){.wrap{padding:0 20px;}}
+
+  /* ===== NAVBAR ===== */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:200;
+    height:80px;display:flex;align-items:center;
+    background:transparent;
+    transition:background .4s var(--ease), backdrop-filter .4s var(--ease), border-color .4s var(--ease);
+    border-bottom:1px solid transparent;
+  }
+  nav.scrolled{
+    background:rgba(10,10,10,.82);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(191,191,191,.12);
+  }
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;width:100%;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:.02em;}
+  .logo svg{width:26px;height:26px;}
+  .nav-links{display:flex;gap:40px;font-size:15px;color:var(--gray);}
+  .nav-links a{transition:color .18s var(--ease);}
+  .nav-links a:hover{color:var(--white);}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    border-radius:8px;font-size:15px;font-weight:600;
+    cursor:pointer;border:1px solid transparent;
+    transition:background .18s var(--ease),color .18s var(--ease),transform .12s var(--ease),border-color .18s var(--ease);
+    white-space:nowrap;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--red);color:var(--white);padding:12px 22px;}
+  .btn-primary:hover{background:var(--red-light);}
+  .btn-dark{background:var(--white);color:var(--black);padding:14px 30px;}
+  .btn-dark:hover{background:var(--red);color:var(--white);}
+  .btn-outline{background:transparent;color:var(--white);border-color:rgba(191,191,191,.35);padding:14px 30px;}
+  .btn-outline:hover{border-color:var(--white);}
+  .btn-lg{padding:18px 38px;font-size:16px;}
+  @media(max-width:900px){.nav-links{display:none;}}
+
+  /* ===== HERO ===== */
+  .hero{
+    min-height:100vh;display:flex;align-items:center;
+    position:relative;padding-top:80px;overflow:hidden;
+  }
+  #network-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55;}
+  .hero-grid{
+    position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:48px;
+    align-items:center;width:100%;padding:64px 0;
+  }
+  .eyebrow{
+    color:var(--red);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    display:flex;align-items:center;gap:10px;margin-bottom:28px;
+    opacity:0;animation:fadeUp .8s var(--ease) .1s forwards;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;}
+  h1{
+    font-size:64px;line-height:1.08;font-weight:700;letter-spacing:-.02em;
+  }
+  h1 .line1{display:block;opacity:0;animation:fadeUp .8s var(--ease) .25s forwards;}
+  h1 .line2{display:block;color:var(--gray);opacity:0;animation:fadeUp .8s var(--ease) .45s forwards;}
+  .hero p.sub{
+    margin-top:28px;font-size:18px;line-height:1.7;color:var(--gray);max-width:520px;
+    opacity:0;animation:fadeUp .8s var(--ease) .65s forwards;
+  }
+  .hero-cta{display:flex;gap:16px;margin-top:40px;flex-wrap:wrap;
+    opacity:0;animation:fadeUp .8s var(--ease) .85s forwards;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .hero-visual{position:relative;height:480px;z-index:2;}
+  @media(max-width:1000px){
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-visual{height:320px;order:-1;}
+    h1{font-size:38px;}
+  }
+
+  /* flow diagram (hero visual) */
+  .flow-diagram{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:0;}
+  .flow-node{
+    display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid rgba(191,191,191,.2);
+    border-radius:8px;background:rgba(255,255,255,.02);font-size:13px;color:var(--gray);
+    width:fit-content;margin-left:auto;position:relative;
+  }
+  .flow-node .ind{width:7px;height:7px;border-radius:50%;background:var(--gray);transition:background .3s,box-shadow .3s;}
+  .flow-node.active .ind{background:var(--red);box-shadow:0 0 8px var(--red);}
+  .flow-node.active{border-color:rgba(194,16,42,.4);color:var(--white);}
+  .flow-connector{width:1px;height:26px;margin:0 auto;margin-right:60px;background:rgba(191,191,191,.2);position:relative;overflow:hidden;}
+  .flow-connector .pulse{position:absolute;top:-20px;left:0;width:100%;height:20px;background:linear-gradient(var(--red),transparent);animation:flowDown 3.5s linear infinite;}
+  @keyframes flowDown{0%{top:-20px;}100%{top:120%;}}
+
+  /* ===== TICKER ===== */
+  .ticker-wrap{
+    border-top:1px solid rgba(191,191,191,.12);border-bottom:1px solid rgba(191,191,191,.12);
+    padding:18px 0;overflow:hidden;white-space:nowrap;position:relative;
+  }
+  .ticker-track{display:inline-flex;animation:ticker 40s linear infinite;}
+  .ticker-track span{font-size:14px;color:var(--gray);padding:0 32px;display:inline-flex;align-items:center;gap:8px;}
+  .ticker-track span b{color:var(--red);font-weight:600;}
+  @keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+  /* ===== SECTIONS ===== */
+  section{padding:160px 0;position:relative;}
+  .section-head{max-width:680px;margin-bottom:80px;}
+  .section-head .eyebrow-sm{color:var(--red);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px;display:block;}
+  h2{font-size:46px;line-height:1.18;font-weight:700;letter-spacing:-.015em;}
+  h2 .muted{color:var(--gray);}
+  .section-head p{margin-top:22px;font-size:18px;line-height:1.7;color:var(--gray);}
+  @media(max-width:768px){
+    section{padding:96px 0;}
+    h2{font-size:30px;}
+    .section-head{margin-bottom:48px;}
+  }
+
+  /* problem cards */
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(191,191,191,.15);border:1px solid rgba(191,191,191,.15);border-radius:8px;overflow:hidden;}
+  .grid-3 .cell{background:var(--black);padding:40px 32px;}
+  .cell .num{font-size:13px;color:var(--gray);font-weight:600;letter-spacing:.05em;}
+  .cell h3{font-size:22px;margin-top:18px;font-weight:600;}
+  .cell p{margin-top:14px;color:var(--gray);font-size:15px;line-height:1.7;}
+  @media(max-width:900px){.grid-3{grid-template-columns:1fr;}}
+
+  /* techo operativo chart */
+  .chart-box{border:1px solid rgba(191,191,191,.18);border-radius:8px;padding:48px;background:rgba(255,255,255,.015);}
+  .chart-svg{width:100%;height:auto;display:block;}
+  .chart-legend{display:flex;gap:32px;margin-top:28px;flex-wrap:wrap;}
+  .chart-legend span{font-size:13px;color:var(--gray);display:flex;align-items:center;gap:8px;}
+  .chart-legend .sw{width:14px;height:3px;border-radius:2px;}
+
+  /* counters */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(191,191,191,.15);border:1px solid rgba(191,191,191,.15);border-radius:8px;overflow:hidden;}
+  .metric{background:var(--black);padding:36px 28px;}
+  .metric .val{font-size:42px;font-weight:700;color:var(--white);}
+  .metric .val .suffix{color:var(--red);}
+  .metric .label{margin-top:8px;font-size:14px;color:var(--gray);}
+  @media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}}
+
+  /* architecture diagram */
+  .arch-flow{display:flex;align-items:stretch;gap:0;margin-top:8px;}
+  .arch-col{flex:1;border:1px solid rgba(191,191,191,.18);border-radius:8px;padding:28px 24px;background:rgba(255,255,255,.015);}
+  .arch-col h4{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);font-weight:700;}
+  .arch-col ul{margin-top:18px;list-style:none;}
+  .arch-col li{font-size:14px;color:var(--gray);padding:9px 0;border-top:1px solid rgba(191,191,191,.1);}
+  .arch-col li:first-child{border-top:none;}
+  .arch-arrow{display:flex;align-items:center;justify-content:center;width:48px;color:var(--gray);font-size:20px;}
+  @media(max-width:768px){.arch-flow{flex-direction:column;}.arch-arrow{width:100%;height:32px;transform:rotate(90deg);}}
+
+  /* process timeline */
+  .timeline{display:flex;position:relative;margin-top:24px;}
+  .timeline-line{position:absolute;top:24px;left:0;right:0;height:1px;background:rgba(191,191,191,.2);}
+  .timeline-line .fill{height:100%;background:var(--red);width:0%;transition:width 1.2s var(--ease);}
+  .t-step{flex:1;text-align:left;padding-right:24px;position:relative;}
+  .t-step .t-num{
+    width:48px;height:48px;border-radius:50%;border:1px solid rgba(191,191,191,.3);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;
+    background:var(--black);position:relative;z-index:2;transition:border-color .3s,color .3s,background .3s;
+  }
+  .t-step.active .t-num{border-color:var(--red);background:var(--red);color:var(--white);}
+  .t-step h4{margin-top:20px;font-size:17px;font-weight:600;}
+  .t-step p{margin-top:8px;font-size:14px;color:var(--gray);line-height:1.6;}
+  @media(max-width:768px){.timeline{flex-direction:column;gap:32px;}.timeline-line{display:none;}}
+
+  /* case study */
+  .case{border:1px solid rgba(191,191,191,.18);border-radius:8px;padding:56px;background:rgba(255,255,255,.015);}
+  .case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:40px;}
+  .case-grid h5{font-size:13px;color:var(--red);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+  .case-grid p{margin-top:12px;font-size:15px;color:var(--gray);line-height:1.7;}
+  @media(max-width:768px){.case{padding:32px;}.case-grid{grid-template-columns:1fr;}}
+
+  /* ===== DIAGNOSTIC ===== */
+  .diagnostic-section{background:#050505;}
+  .diag-shell{
+    max-width:640px;margin:0 auto;border:1px solid rgba(191,191,191,.18);
+    border-radius:12px;background:rgba(255,255,255,.015);padding:56px 48px;min-height:480px;
+    display:flex;flex-direction:column;
+  }
+  @media(max-width:640px){.diag-shell{padding:32px 22px;}}
+  .diag-progress{display:flex;justify-content:space-between;font-size:12px;color:var(--gray);margin-bottom:10px;}
+  .diag-bar{height:3px;background:rgba(191,191,191,.15);border-radius:2px;overflow:hidden;margin-bottom:40px;}
+  .diag-bar .fill{height:100%;background:var(--red);width:0%;transition:width .4s var(--ease);}
+  .diag-q{font-size:24px;font-weight:600;line-height:1.4;margin-bottom:32px;}
+  .diag-options{display:flex;flex-direction:column;gap:10px;}
+  .diag-opt{
+    text-align:left;padding:16px 20px;border:1px solid rgba(191,191,191,.22);border-radius:8px;
+    background:transparent;color:var(--white);font-size:15px;cursor:pointer;
+    transition:border-color .18s var(--ease),background .18s var(--ease);font-family:inherit;
+  }
+  .diag-opt:hover{border-color:var(--gray);}
+  .diag-opt.selected{border-color:var(--red);background:rgba(194,16,42,.08);}
+  .diag-nav{display:flex;justify-content:space-between;margin-top:auto;padding-top:32px;}
+  .diag-back{color:var(--gray);font-size:14px;cursor:pointer;background:none;border:none;font-family:inherit;}
+  .diag-start{text-align:center;}
+  .diag-start h3{font-size:28px;font-weight:700;}
+  .diag-start p{margin-top:16px;color:var(--gray);font-size:16px;line-height:1.7;}
+  .diag-start .btn{margin-top:32px;}
+
+  /* result screen */
+  .result-ring{width:160px;height:160px;margin:0 auto;position:relative;}
+  .result-ring svg{transform:rotate(-90deg);}
+  .result-ring .bg{stroke:rgba(191,191,191,.15);}
+  .result-ring .fg{stroke:var(--red);stroke-linecap:round;transition:stroke-dashoffset 1.4s var(--ease);}
+  .result-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .result-num .n{font-size:40px;font-weight:700;}
+  .result-num .d{font-size:12px;color:var(--gray);}
+  .result-tags{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(191,191,191,.15);border:1px solid rgba(191,191,191,.15);border-radius:8px;overflow:hidden;margin-top:32px;}
+  .result-tags div{background:var(--black);padding:18px 20px;}
+  .result-tags .lbl{font-size:12px;color:var(--gray);}
+  .result-tags .vl{font-size:15px;font-weight:600;margin-top:4px;}
+  .result-tags .vl.crit{color:var(--red);}
+
+  /* loader */
+  .loader-screen{text-align:center;padding:40px 0;}
+  .loader-line{font-size:14px;color:var(--gray);margin-bottom:18px;height:18px;transition:color .3s;}
+  .loader-line.active{color:var(--white);}
+  .loader-bar{height:2px;background:rgba(191,191,191,.15);border-radius:2px;overflow:hidden;}
+  .loader-bar .f{height:100%;width:0%;background:var(--red);transition:width 2.5s linear;}
+
+  /* form */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .field{display:flex;flex-direction:column;gap:8px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-size:13px;color:var(--gray);}
+  .field input, .field select, .field textarea{
+    height:56px;padding:0 18px;border-radius:8px;border:1px solid rgba(191,191,191,.25);
+    background:rgba(255,255,255,.02);color:var(--white);font-family:inherit;font-size:15px;
+    transition:border-color .18s var(--ease);
+  }
+  .field textarea{height:100px;padding:14px 18px;resize:vertical;}
+  .field input:hover,.field select:hover,.field textarea:hover{border-color:var(--gray);}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--red);}
+  .field-error{font-size:12px;color:var(--red);display:none;}
+  .field.error input,.field.error select,.field.error textarea{border-color:var(--red);}
+  .field.error .field-error{display:block;}
+  .consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--gray);margin-top:8px;}
+  .consent input{margin-top:3px;}
+  @media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+
+  /* success screen */
+  .success-screen{text-align:center;padding:24px 0;}
+  .check{width:72px;height:72px;border-radius:50%;border:2px solid var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;
+    animation:checkPop .5s var(--ease);}
+  @keyframes checkPop{from{transform:scale(.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .check svg{stroke:var(--red);stroke-width:2.5;fill:none;}
+  .success-screen h3{font-size:26px;font-weight:700;}
+  .success-screen p{margin-top:14px;color:var(--gray);font-size:15px;line-height:1.7;}
+  .success-actions{display:flex;gap:14px;justify-content:center;margin-top:32px;flex-wrap:wrap;}
+
+  /* WhatsApp floating button */
+  .wa-float{
+    position:fixed;bottom:28px;right:28px;z-index:300;
+    width:58px;height:58px;border-radius:50%;background:var(--red);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 4px 18px rgba(194,16,42,.35);transition:transform .18s var(--ease),background .18s var(--ease);
+  }
+  .wa-float:hover{background:var(--red-light);transform:scale(1.06);}
+  .wa-float::before{
+    content:'';position:absolute;inset:0;border-radius:50%;border:1px solid var(--red);
+    animation:waPulse 2.4s infinite;
+  }
+  @keyframes waPulse{0%{transform:scale(1);opacity:.6;}100%{transform:scale(1.7);opacity:0;}}
+  .wa-float svg{width:28px;height:28px;fill:var(--white);position:relative;z-index:2;}
+
+  /* CTA final */
+  .cta-final{text-align:center;}
+  .cta-final h2{max-width:760px;margin:0 auto;}
+  .cta-final p{max-width:560px;margin:22px auto 0;color:var(--gray);font-size:18px;}
+  .cta-final .btn{margin-top:40px;}
+
+  /* footer */
+  footer{border-top:1px solid rgba(191,191,191,.12);padding:80px 0 40px;background:#050505;}
+  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;}
+  .foot-grid .logo{margin-bottom:18px;}
+  .foot-grid p{font-size:14px;color:var(--gray);line-height:1.7;max-width:280px;}
+  .foot-col h5{font-size:13px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px;}
+  .foot-col a{display:block;font-size:14px;color:var(--gray);padding:6px 0;transition:color .18s;}
+  .foot-col a:hover{color:var(--white);}
+  .foot-bottom{margin-top:64px;padding-top:24px;border-top:1px solid rgba(191,191,191,.1);display:flex;justify-content:space-between;font-size:13px;color:var(--gray);flex-wrap:wrap;gap:12px;}
+  @media(max-width:768px){.foot-grid{grid-template-columns:1fr 1fr;}}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:500;background:rgba(5,5,5,.78);backdrop-filter:blur(4px);
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:80px 20px;overflow-y:auto;
+    opacity:0;pointer-events:none;transition:opacity .3s var(--ease);
+  }
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal-box{
+    width:100%;max-width:680px;background:var(--black);border:1px solid rgba(191,191,191,.18);
+    border-radius:12px;padding:56px 48px;position:relative;
+    transform:translateY(20px);opacity:0;transition:transform .35s var(--ease),opacity .35s var(--ease);
+  }
+  .modal-overlay.open .modal-box{transform:translateY(0);opacity:1;}
+  @media(max-width:640px){.modal-box{padding:36px 24px;}.modal-overlay{padding:48px 14px;}}
+  .modal-close{
+    position:absolute;top:24px;right:24px;width:36px;height:36px;border-radius:50%;
+    border:1px solid rgba(191,191,191,.3);background:transparent;color:var(--gray);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;line-height:1;
+    transition:border-color .18s,color .18s;
+  }
+  .modal-close:hover{border-color:var(--white);color:var(--white);}
+  .modal-eyebrow{color:var(--red);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px;}
+  .modal-box h3{font-size:30px;font-weight:700;line-height:1.25;letter-spacing:-.01em;max-width:520px;}
+  .modal-lede{margin-top:18px;font-size:17px;color:var(--gray);line-height:1.7;}
+  .modal-block{margin-top:36px;}
+  .modal-block h4{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--red);font-weight:700;margin-bottom:14px;}
+  .modal-block p{font-size:15px;color:var(--gray);line-height:1.75;margin-bottom:10px;}
+  .modal-phase{display:flex;gap:18px;padding:18px 0;border-top:1px solid rgba(191,191,191,.1);}
+  .modal-phase:first-of-type{border-top:none;}
+  .modal-phase .pn{font-size:13px;font-weight:700;color:var(--red);min-width:28px;}
+  .modal-phase .pc h5{font-size:16px;font-weight:600;}
+  .modal-phase .pc p{font-size:14px;color:var(--gray);margin-top:6px;line-height:1.65;}
+  .modal-list{list-style:none;margin-top:8px;}
+  .modal-list li{font-size:14px;color:var(--gray);padding:8px 0;border-top:1px solid rgba(191,191,191,.08);}
+  .modal-list li:first-child{border-top:none;}
+  .modal-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;}
+  @media(max-width:560px){.modal-cols{grid-template-columns:1fr;}}
+  .modal-case{border:1px solid rgba(191,191,191,.15);border-radius:8px;padding:20px;margin-top:14px;}
+  .modal-case h5{font-size:15px;font-weight:600;}
+  .modal-case .stat{color:var(--red);font-weight:700;font-size:14px;margin-top:8px;}
+  .modal-form .form-grid{margin-top:24px;}
+  .modal-form .btn{margin-top:24px;width:100%;}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav id="navbar">
+  <div class="wrap">
+    <div class="logo">
+      <svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="34" stroke="white" stroke-width="11"/><circle cx="50" cy="50" r="9" fill="white"/><rect x="56" y="46" width="22" height="8" fill="white"/><circle cx="78" cy="50" r="11" fill="#C2102A"/></svg>
+      OPERUX
+    </div>
+    <div class="nav-links">
+      <a href="#" data-modal="sistema">Arquitectura</a>
+      <a href="#" data-modal="metodo">Proceso</a>
+      <a href="#diagnostico">Diagnóstico</a>
+      <a href="#" data-modal="casos">Resultados</a>
+    </div>
+    <a href="#diagnostico" class="btn btn-primary">Solicitar Diagnóstico</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <canvas id="network-canvas"></canvas>
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span>ARQUITECTURA OPERATIVA</div>
+      <h1>
+        <span class="line1">El problema de tu empresa</span>
+        <span class="line1">probablemente no es vender.</span>
+        <span class="line2">Es que todavía depende demasiado de ti.</span>
+      </h1>
+      <p class="sub">Diseñamos la infraestructura operativa que elimina la dependencia del fundador mediante sistemas, automatización e inteligencia artificial — para que tu empresa pueda crecer sin convertirte en el cuello de botella.</p>
+      <div class="hero-cta">
+        <a href="#diagnostico" class="btn btn-dark btn-lg">Solicitar Diagnóstico Operativo</a>
+        <a href="#problema" class="btn btn-outline btn-lg">Ver cómo funciona</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="flow-diagram" id="flow-diagram">
+        <div class="flow-node" data-i="0"><span class="ind"></span>Clientes</div>
+        <div class="flow-connector"><div class="pulse" style="animation-delay:0s"></div></div>
+        <div class="flow-node" data-i="1"><span class="ind"></span>CRM</div>
+        <div class="flow-connector"><div class="pulse" style="animation-delay:.5s"></div></div>
+        <div class="flow-node" data-i="2"><span class="ind"></span>Inteligencia Artificial</div>
+        <div class="flow-connector"><div class="pulse" style="animation-delay:1s"></div></div>
+        <div class="flow-node" data-i="3"><span class="ind"></span>Automatización</div>
+        <div class="flow-connector"><div class="pulse" style="animation-delay:1.5s"></div></div>
+        <div class="flow-node" data-i="4"><span class="ind"></span>Dashboard</div>
+        <div class="flow-connector"><div class="pulse" style="animation-delay:2s"></div></div>
+        <div class="flow-node" data-i="5"><span class="ind"></span>Equipo</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== TICKER ===== -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker">
+  </div>
+</div>
+
+<!-- ===== EL PROBLEMA INVISIBLE ===== -->
+<section id="problema">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow-sm">El problema invisible</span>
+      <h2>Tu empresa no tiene un problema de esfuerzo. <span class="muted">Tiene un problema de arquitectura.</span></h2>
+      <p>Mientras más crece tu empresa, más depende de ti. No por falta de talento. Por falta de un sistema que mueva la información sin que alguien tenga que hacerlo a mano.</p>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="cell">
+        <div class="num">01</div>
+        <h3>Información fragmentada</h3>
+        <p>Los datos viven dispersos en herramientas que no conversan entre sí. Cada decisión exige reconstruir el contexto desde cero.</p>
+      </div>
+      <div class="cell">
+        <div class="num">02</div>
+        <h3>Procesos manuales</h3>
+        <p>Las mismas tareas se repiten día tras día. Nadie las documentó. Nadie las automatizó. Todos las recuerdan distinto.</p>
+      </div>
+      <div class="cell">
+        <div class="num">03</div>
+        <h3>Dependencia humana</h3>
+        <p>El conocimiento crítico vive en la memoria de una o dos personas. Si faltan, la operación se ralentiza de inmediato.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TECHO OPERATIVO ===== -->
+<section id="techo" style="background:#050505;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow-sm">El Techo Operativo</span>
+      <h2>Todo negocio tiene <span class="muted">un límite invisible.</span></h2>
+      <p>Es el punto en el que el volumen de trabajo supera la capacidad de tus procesos para absorberlo sin intervención manual constante. Cada cliente nuevo exige más esfuerzo que el anterior, en lugar de menos.</p>
+    </div>
+    <div class="chart-box reveal">
+      <svg class="chart-svg" viewBox="0 0 800 280" id="techo-chart">
+        <line x1="0" y1="40" x2="800" y2="40" stroke="rgba(194,16,42,.3)" stroke-dasharray="4 4"/>
+        <text x="0" y="28" fill="#C2102A" font-size="12" font-family="Inter">Techo Operativo</text>
+        <polyline points="0,260 100,235 200,200 300,150 400,95 500,55 600,42 700,40 800,40" fill="none" stroke="#BFBFBF" stroke-width="2"/>
+        <polyline id="growth-line" points="0,260 100,230 200,185 300,120 400,70 500,30 600,10 700,-5 800,-15" fill="none" stroke="#C2102A" stroke-width="2.5" stroke-dasharray="900" stroke-dashoffset="900"/>
+      </svg>
+      <div class="chart-legend">
+        <span><span class="sw" style="background:#BFBFBF"></span>Capacidad operativa actual</span>
+        <span><span class="sw" style="background:#C2102A"></span>Crecimiento del negocio</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== EL COSTO REAL ===== -->
+<section id="costo">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow-sm">El costo real</span>
+      <h2>No se trata de dinero. <span class="muted">Se trata de tiempo perdido.</span></h2>
+      <p>Horas, errores y oportunidades que desaparecen sin dejar rastro en ningún reporte financiero.</p>
+    </div>
+    <div class="metrics reveal">
+      <div class="metric"><div class="val"><span class="counter" data-target="420">0</span><span class="suffix">+</span></div><div class="label">Horas perdidas al mes</div></div>
+      <div class="metric"><div class="val"><span class="counter" data-target="78">0</span><span class="suffix">%</span></div><div class="label">Procesos manuales</div></div>
+      <div class="metric"><div class="val"><span class="counter" data-target="31">0</span><span class="suffix">%</span></div><div class="label">Errores repetitivos</div></div>
+      <div class="metric"><div class="val"><span class="counter" data-target="65">0</span><span class="suffix">%</span></div><div class="label">Tiempo apagando incendios</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ARQUITECTURA OPERUX ===== -->
+<section id="arquitectura" style="background:#050505;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow-sm">Arquitectura Operux</span>
+      <h2>Cómo fluye la información <span class="muted">dentro de un sistema vivo.</span></h2>
+      <p>Toda operación mueve información a través de tres capas. Diseñarlas con precisión es lo que elimina la dependencia.</p>
+    </div>
+    <div class="arch-flow reveal">
+      <div class="arch-col">
+        <h4>Captura</h4>
+        <ul><li>CRM</li><li>WhatsApp</li><li>Email</li><li>Formularios</li><li>ERP</li></ul>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-col">
+        <h4>Procesamiento</h4>
+        <ul><li>Inteligencia Artificial</li><li>Reglas de negocio</li><li>Clasificación</li><li>Validación</li></ul>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-col">
+        <h4>Distribución</h4>
+        <ul><li>Slack</li><li>Notion</li><li>Dashboard</li><li>WhatsApp</li><li>Correo</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CÓMO TRABAJA OPERUX / PROCESO ===== -->
+<section id="proceso">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow-sm">Proceso</span>
+      <h2>Así reconstruimos <span class="muted">el sistema operativo de tu empresa.</span></h2>
+    </div>
+    <div class="timeline reveal" id="timeline">
+      <div class="timeline-line"><div class="fill" id="timeline-fill"></div></div>
+      <div class="t-step"><div class="t-num">01</div><h4>Diagnóstico</h4><p>Analizamos dónde nace la fricción real de tu operación.</p></div>
+      <div class="t-step"><div class="t-num">02</div><h4>Arquitectura</h4><p>Diseñamos el sistema completo: captura, procesamiento, distribución.</p></div>
+      <div class="t-step"><div class="t-num">03</div><h4>Implementación</h4><p>Construimos una infraestructura que opera incluso sin el fundador presente.</p></div>
+      <div class="t-step"><div class="t-num">04</div><h4>Optimización</h4><p>Ajustamos el sistema continuamente conforme el negocio escala.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CASO DE USO ===== -->
+<section id="resultados" style="background:#050505;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow-sm">Caso de uso</span>
+      <h2>Una empresa de <span class="muted">25 empleados.</span></h2>
+    </div>
+    <div class="case reveal">
+      <p style="color:var(--gray);font-size:16px;line-height:1.8;max-width:640px;">Todo dependía del fundador: aprobaciones, seguimiento de clientes y reportes vivían exclusivamente en su cabeza y su bandeja de entrada.</p>
+      <div class="case-grid">
+        <div><h5>Problema</h5><p>Cada decisión pasaba por una sola persona. El crecimiento se detenía por falta de capacidad de procesamiento, no de demanda.</p></div>
+        <div><h5>Arquitectura</h5><p>Captura unificada de clientes, clasificación automática con IA y distribución directa a cada equipo sin intervención manual.</p></div>
+        <div><h5>Resultado</h5><p>Menos errores, más tiempo del fundador para decisiones estratégicas y visibilidad completa de la operación en tiempo real.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIAGNÓSTICO INTERACTIVO ===== -->
+<section id="diagnostico" class="diagnostic-section">
+  <div class="wrap">
+    <div class="section-head reveal" style="margin:0 auto 56px;text-align:center;">
+      <span class="eyebrow-sm">Diagnóstico Operativo Inteligente</span>
+      <h2>Descubre si tu empresa <span class="muted">ya alcanzó su Techo Operativo.</span></h2>
+      <p style="margin-left:auto;margin-right:auto;">Responde algunas preguntas y obtén un diagnóstico personalizado junto con un informe exclusivo en PDF.</p>
+    </div>
+
+    <div class="diag-shell" id="diag-shell">
+      <!-- views injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA FINAL ===== -->
+<section class="cta-final">
+  <div class="wrap">
+    <h2>Tu empresa ya llegó hasta aquí. <span class="muted">Ahora es momento de que sus sistemas hagan el resto.</span></h2>
+    <p>Solicita un Diagnóstico Operativo y descubre dónde está el verdadero límite de crecimiento de tu empresa.</p>
+    <a href="#diagnostico" class="btn btn-dark btn-lg">Solicitar Diagnóstico Operativo</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="logo">
+          <svg viewBox="0 0 100 100" fill="none" width="24" height="24"><circle cx="50" cy="50" r="34" stroke="white" stroke-width="11"/><circle cx="50" cy="50" r="9" fill="white"/><rect x="56" y="46" width="22" height="8" fill="white"/><circle cx="78" cy="50" r="11" fill="#C2102A"/></svg>
+          OPERUX
+        </div>
+        <p>Firma de Arquitectura Operativa. Diseñamos la infraestructura invisible que permite que una empresa funcione, escale y deje de depender de una sola persona.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Navegación</h5>
+        <a href="#" data-modal="metodo">Método</a>
+        <a href="#" data-modal="sistema">Sistema</a>
+        <a href="#" data-modal="diagnostico-info">Diagnóstico</a>
+        <a href="#" data-modal="manifiesto">Manifiesto</a>
+        <a href="#" data-modal="casos">Casos</a>
+      </div>
+      <div class="foot-col">
+        <h5>Contacto</h5>
+        <a href="#" data-modal="contacto">Hablar con Operux</a>
+        <a href="mailto:jesus.jimenez7072010@gmail.com">Correo</a>
+        <a href="https://wa.me/584128245940" target="_blank">WhatsApp</a>
+      </div>
+      <div class="foot-col">
+        <h5>Legal</h5>
+        <a href="#" data-modal="privacidad">Privacidad</a>
+        <a href="#" data-modal="terminos">Términos</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Operux. Todos los derechos reservados.</span>
+      <span>Diagnóstico · Arquitectura · Autonomía Operativa</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== MODAL OVERLAY ===== -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-close" id="modal-close" aria-label="Cerrar">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ===== WHATSAPP FLOAT ===== -->
+<a class="wa-float" id="wa-float" href="https://wa.me/584128245940?text=Hola.%20Vengo%20desde%20la%20p%C3%A1gina%20de%20Operux%20y%20me%20gustar%C3%ADa%20solicitar%20un%20Diagn%C3%B3stico%20Operativo%20para%20mi%20empresa." target="_blank" rel="noopener" aria-label="Hablar por WhatsApp">
+  <svg viewBox="0 0 32 32"><path d="M16 0C7.16 0 0 7.16 0 16c0 2.82.74 5.46 2.03 7.76L0 32l8.46-1.98A15.9 15.9 0 0 0 16 32c8.84 0 16-7.16 16-16S24.84 0 16 0zm0 29.2c-2.5 0-4.85-.69-6.86-1.89l-.49-.29-5.02 1.17 1.2-4.9-.32-.5A13.13 13.13 0 0 1 2.8 16C2.8 8.7 8.7 2.8 16 2.8S29.2 8.7 29.2 16 23.3 29.2 16 29.2zm7.2-9.78c-.39-.2-2.32-1.15-2.68-1.28-.36-.13-.62-.2-.88.2-.26.39-1.01 1.28-1.24 1.54-.23.26-.46.29-.85.1-.39-.2-1.65-.61-3.14-1.94-1.16-1.03-1.94-2.31-2.17-2.7-.23-.39-.02-.6.17-.79.18-.18.39-.46.59-.69.2-.23.26-.39.39-.65.13-.26.07-.49-.03-.69-.1-.2-.88-2.12-1.21-2.9-.32-.76-.64-.66-.88-.67-.23-.01-.49-.01-.75-.01s-.69.1-1.05.49c-.36.39-1.37 1.34-1.37 3.26s1.4 3.78 1.6 4.04c.2.26 2.76 4.22 6.69 5.91.94.4 1.67.65 2.24.83.94.3 1.8.26 2.48.16.76-.11 2.32-.95 2.65-1.86.33-.91.33-1.69.23-1.85-.1-.16-.36-.26-.75-.46z"/></svg>
+</a>
+
+<script>
+/* =========================================================
+   EmailJS — CONFIGURACIÓN REQUERIDA
+   1) Crea una cuenta gratis en https://www.emailjs.com
+   2) Crea un Email Service y dos Templates:
+        - TEMPLATE_ADMIN: te llega a ti (jesus.jimenez7072010@gmail.com) con todas las respuestas del formulario
+        - TEMPLATE_USER: le llega al usuario, con el PDF adjunto (sube el PDF como attachment fijo en la plantilla)
+   3) Reemplaza las constantes de abajo con tus IDs reales.
+========================================================= */
+const EMAILJS_PUBLIC_KEY  = "TU_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID  = "TU_SERVICE_ID";
+const EMAILJS_TEMPLATE_ADMIN = "TU_TEMPLATE_ADMIN_ID";
+const EMAILJS_TEMPLATE_USER  = "TU_TEMPLATE_USER_ID";
+const ADMIN_EMAIL = "jesus.jimenez7072010@gmail.com";
+
+if (window.emailjs && EMAILJS_PUBLIC_KEY !== "TU_PUBLIC_KEY") {
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+}
+
+/* ===== NAVBAR SCROLL ===== */
+const navEl = document.getElementById('navbar');
+window.addEventListener('scroll', ()=>{
+  navEl.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+/* ===== REVEAL ON SCROLL ===== */
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+},{threshold:.15});
+revealEls.forEach(el=>io.observe(el));
+
+/* ===== TICKER CONTENT ===== */
+const alerts = ["Todo pasa por el fundador","Información duplicada","Reportes manuales","Procesos lentos","Errores repetitivos","Clientes esperando","Demasiadas herramientas","Equipos descoordinados","Retrabajo","Datos dispersos","Operaciones manuales","Aprobaciones innecesarias","Dependencia total"];
+const tickerEl = document.getElementById('ticker');
+const tickerHtml = alerts.map(a=>`<span><b>⚠</b> ${a}</span>`).join('');
+tickerEl.innerHTML = tickerHtml + tickerHtml;
+
+/* ===== HERO FLOW DIAGRAM ANIMATION ===== */
+const flowNodes = document.querySelectorAll('#flow-diagram .flow-node');
+let flowIdx = 0;
+function pulseFlow(){
+  flowNodes.forEach(n=>n.classList.remove('active'));
+  flowNodes[flowIdx].classList.add('active');
+  flowIdx = (flowIdx+1)%flowNodes.length;
+}
+setInterval(pulseFlow, 700);
+pulseFlow();
+
+/* ===== NETWORK BACKGROUND CANVAS ===== */
+const canvas = document.getElementById('network-canvas');
+const ctx = canvas.getContext('2d');
+let nodes = [];
+function resizeCanvas(){
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const count = Math.floor((canvas.width*canvas.height)/26000);
+  nodes = Array.from({length:count}, ()=>({
+    x:Math.random()*canvas.width, y:Math.random()*canvas.height,
+    vx:(Math.random()-.5)*.18, vy:(Math.random()-.5)*.18, r:Math.random()*1.4+.6
+  }));
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+let mouse = {x:-9999,y:-9999};
+canvas.addEventListener('mousemove', e=>{
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX-rect.left; mouse.y = e.clientY-rect.top;
+});
+canvas.addEventListener('mouseleave', ()=>{mouse.x=-9999;mouse.y=-9999;});
+function drawNetwork(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  nodes.forEach(n=>{
+    n.x+=n.vx; n.y+=n.vy;
+    if(n.x<0||n.x>canvas.width) n.vx*=-1;
+    if(n.y<0||n.y>canvas.height) n.vy*=-1;
+  });
+  for(let i=0;i<nodes.length;i++){
+    for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i], b=nodes[j];
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<120){
+        const dMouse = Math.min(Math.hypot(a.x-mouse.x,a.y-mouse.y), Math.hypot(b.x-mouse.x,b.y-mouse.y));
+        const near = dMouse < 140;
+        ctx.strokeStyle = near ? 'rgba(194,16,42,'+(1-d/120)*0.5+')' : 'rgba(191,191,191,'+(1-d/120)*0.12+')';
+        ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      }
+    }
+  }
+  nodes.forEach(n=>{
+    const dMouse = Math.hypot(n.x-mouse.x,n.y-mouse.y);
+    const near = dMouse < 100;
+    ctx.fillStyle = near ? 'rgba(194,16,42,.9)' : 'rgba(191,191,191,.35)';
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r*(near?1.8:1),0,Math.PI*2); ctx.fill();
+  });
+  requestAnimationFrame(drawNetwork);
+}
+drawNetwork();
+
+/* ===== TECHO CHART ANIMATION ===== */
+const growthLine = document.getElementById('growth-line');
+const techoSection = document.getElementById('techo');
+let chartDone = false;
+const chartObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && !chartDone){
+      growthLine.style.transition = 'stroke-dashoffset 2.2s ease';
+      growthLine.style.strokeDashoffset = '0';
+      chartDone = true;
+    }
+  });
+},{threshold:.4});
+chartObs.observe(techoSection);
+
+/* ===== COUNTERS ===== */
+const counters = document.querySelectorAll('.counter');
+let countersDone = false;
+const counterObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && !countersDone){
+      countersDone = true;
+      counters.forEach(c=>{
+        const target = parseInt(c.dataset.target,10);
+        let cur = 0;
+        const step = Math.max(1, Math.round(target/60));
+        const t = setInterval(()=>{
+          cur += step;
+          if(cur>=target){ cur=target; clearInterval(t); }
+          c.textContent = cur;
+        }, 25);
+      });
+    }
+  });
+},{threshold:.3});
+if(counters.length) counterObs.observe(document.getElementById('costo'));
+
+/* ===== TIMELINE ===== */
+const timelineSteps = document.querySelectorAll('.t-step');
+const timelineFill = document.getElementById('timeline-fill');
+let timelineDone = false;
+const tlObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && !timelineDone){
+      timelineDone = true;
+      timelineFill.style.width = '100%';
+      timelineSteps.forEach((s,i)=> setTimeout(()=>s.classList.add('active'), i*350));
+    }
+  });
+},{threshold:.3});
+tlObs.observe(document.getElementById('timeline'));
+
+/* =========================================================
+   DIAGNÓSTICO INTERACTIVO — lógica completa
+========================================================= */
+const questions = [
+  {q:"¿Cuántas personas trabajan actualmente en tu empresa?", opts:["Solo yo","2 a 5","6 a 15","16 a 50","Más de 50"]},
+  {q:"¿Quién aprueba la mayoría de las decisiones importantes?", opts:["Yo","Un gerente","Mi equipo","Todo está documentado"]},
+  {q:"¿Cuántas herramientas utilizan diariamente?", opts:["1","2–4","5–8","Más de 8"]},
+  {q:"¿Cuántos de tus procesos siguen siendo manuales?", opts:["Casi ninguno","Algunos","La mayoría","Prácticamente todos"]},
+  {q:"¿Cuántas horas dedicas diariamente a resolver problemas operativos?", opts:["Menos de 1","1 a 3","3 a 5","Más de 5"]},
+  {q:"Si te ausentaras una semana, ¿qué ocurriría?", opts:["Nada","Algunos retrasos","Bastantes problemas","La empresa prácticamente se detendría"]},
+  {q:"¿Dónde se pierde más tiempo en tu empresa?", opts:["Clientes / Ventas","Operaciones","Administración","Reportes"]},
+  {q:"¿Tus procesos están documentados?", opts:["Sí, completamente","Parcialmente","Casi nada","No existen"]},
+  {q:"¿Cómo llega la información entre departamentos?", opts:["Automáticamente","Por mensajería","Por correo","De forma verbal"]},
+  {q:"¿Cuántas tareas repetitivas realiza tu equipo diariamente?", opts:["Pocas","Algunas","Muchas","Casi todo es repetitivo"]},
+  {q:"¿Qué herramienta utilizan como fuente principal de información?", opts:["Sistema centralizado","Hojas de cálculo","Correo","Memoria del equipo"]},
+  {q:"¿Qué área te gustaría optimizar primero?", opts:["Ventas","Operaciones","Administración","Atención al cliente"]}
+];
+
+const diagShell = document.getElementById('diag-shell');
+let answers = [];
+let qIndex = -1; // -1 = pantalla de inicio
+
+function renderDiag(){
+  if(qIndex === -1){ renderStart(); return; }
+  if(qIndex === questions.length){ renderLoader(); return; }
+  renderQuestion();
+}
+
+function renderStart(){
+  diagShell.innerHTML = `
+    <div class="diag-start">
+      <h3>Diagnóstico Operativo Inteligente</h3>
+      <p>12 preguntas. Menos de 5 minutos. Al finalizar recibirás tu Índice Operativo y un informe en PDF.</p>
+      <button class="btn btn-dark btn-lg" id="start-diag">Comenzar Diagnóstico</button>
+    </div>`;
+  document.getElementById('start-diag').onclick = ()=>{ qIndex=0; renderDiag(); };
+}
+
+function renderQuestion(){
+  const item = questions[qIndex];
+  const pct = Math.round(((qIndex)/questions.length)*100);
+  diagShell.innerHTML = `
+    <div class="diag-progress"><span>Diagnóstico Operativo</span><span>Pregunta ${qIndex+1} de ${questions.length}</span></div>
+    <div class="diag-bar"><div class="fill" style="width:${pct}%"></div></div>
+    <div class="diag-q">${item.q}</div>
+    <div class="diag-options">
+      ${item.opts.map((o,i)=>`<button class="diag-opt${answers[qIndex]===i?' selected':''}" data-i="${i}">${o}</button>`).join('')}
+    </div>
+    <div class="diag-nav">
+      <button class="diag-back" id="diag-back" ${qIndex===0?'style="visibility:hidden"':''}>← Atrás</button>
+    </div>`;
+  diagShell.querySelectorAll('.diag-opt').forEach(btn=>{
+    btn.onclick = ()=>{
+      answers[qIndex] = parseInt(btn.dataset.i,10);
+      qIndex++;
+      renderDiag();
+    };
+  });
+  const back = document.getElementById('diag-back');
+  if(back) back.onclick = ()=>{ qIndex = Math.max(0, qIndex-1); renderDiag(); };
+}
+
+function renderLoader(){
+  const lines = ["Analizando arquitectura...","Mapeando procesos...","Detectando fricción...","Evaluando dependencia...","Calculando escalabilidad...","Generando diagnóstico..."];
+  diagShell.innerHTML = `
+    <div class="loader-screen">
+      ${lines.map((l,i)=>`<div class="loader-line" id="ll-${i}">${l}</div>`).join('')}
+      <div class="loader-bar"><div class="f" id="loader-fill"></div></div>
+    </div>`;
+  let i=0;
+  const fillEl = document.getElementById('loader-fill');
+  requestAnimationFrame(()=> fillEl.style.width='100%');
+  const t = setInterval(()=>{
+    document.querySelectorAll('.loader-line').forEach(l=>l.classList.remove('active'));
+    const el = document.getElementById('ll-'+i);
+    if(el) el.classList.add('active');
+    i++;
+    if(i>lines.length){ clearInterval(t); renderResult(); }
+  }, 420);
+}
+
+function computeScore(){
+  // cada respuesta vale 0-3 puntos de riesgo aproximado segun indice de opcion
+  const total = answers.reduce((s,a)=> s + (a||0), 0);
+  const max = questions.length * 3;
+  return Math.round((total/max)*100);
+}
+
+function renderResult(){
+  const score = computeScore();
+  const circumference = 2*Math.PI*70;
+  const offset = circumference - (score/100)*circumference;
+  let level, levelColor;
+  if(score<=25){level="Infraestructura sólida";levelColor="";}
+  else if(score<=50){level="Oportunidades importantes";levelColor="";}
+  else if(score<=75){level="Dependencia Operativa Alta";levelColor="crit";}
+  else {level="Techo Operativo Crítico";levelColor="crit";}
+
+  diagShell.innerHTML = `
+    <div style="text-align:center;">
+      <div class="result-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="bg" cx="80" cy="80" r="70" stroke-width="8" fill="none"/>
+          <circle class="fg" cx="80" cy="80" r="70" stroke-width="8" fill="none"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" id="ring-fg"/>
+        </svg>
+        <div class="result-num"><div class="n" id="ring-num">0</div><div class="d">/100</div></div>
+      </div>
+      <p style="margin-top:18px;color:var(--gray);font-size:14px;">Índice Operativo General</p>
+      <div class="result-tags">
+        <div><div class="lbl">Clasificación</div><div class="vl ${levelColor}">${level}</div></div>
+        <div><div class="lbl">Procesos manuales</div><div class="vl">${answers[3]>=2?'Críticos':'Moderados'}</div></div>
+        <div><div class="lbl">Dependencia del fundador</div><div class="vl ${answers[1]===0?'crit':''}">${answers[1]===0?'Alta':'Media'}</div></div>
+        <div><div class="lbl">Documentación</div><div class="vl">${answers[7]>=2?'Baja':'Media'}</div></div>
+      </div>
+      <button class="btn btn-dark btn-lg" id="go-form" style="margin-top:32px;">Generar mi Informe Completo</button>
+    </div>`;
+  setTimeout(()=>{
+    document.getElementById('ring-fg').style.strokeDashoffset = offset;
+    let n=0; const t=setInterval(()=>{ n++; if(n>=score){n=score;clearInterval(t);} document.getElementById('ring-num').textContent=n; },18);
+  }, 100);
+  document.getElementById('go-form').onclick = ()=> renderForm(score, level);
+}
+
+function renderForm(score, level){
+  diagShell.innerHTML = `
+    <h3 style="font-size:24px;font-weight:600;margin-bottom:8px;">Tu diagnóstico está listo.</h3>
+    <p style="color:var(--gray);font-size:15px;margin-bottom:32px;">Ingresa tus datos para recibir el informe completo en PDF junto con las recomendaciones detalladas.</p>
+    <form id="lead-form">
+      <div class="form-grid">
+        <div class="field"><label>Nombre</label><input type="text" name="nombre" required><span class="field-error">Campo requerido</span></div>
+        <div class="field"><label>Empresa</label><input type="text" name="empresa" required><span class="field-error">Campo requerido</span></div>
+        <div class="field"><label>Cargo</label><input type="text" name="cargo" required><span class="field-error">Campo requerido</span></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" name="correo" required><span class="field-error">Correo inválido</span></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" name="whatsapp" required><span class="field-error">Campo requerido</span></div>
+        <div class="field"><label>Número de empleados</label>
+          <select name="empleados" required>
+            <option value="">Selecciona</option>
+            <option>Solo yo</option><option>2 a 5</option><option>6 a 15</option><option>16 a 50</option><option>Más de 50</option>
+          </select>
+          <span class="field-error">Selecciona una opción</span>
+        </div>
+        <div class="field full"><label>¿Cuál es actualmente el mayor reto operativo de tu empresa?</label><textarea name="reto"></textarea></div>
+        <div class="field full">
+          <label class="consent"><input type="checkbox" name="consent" required> Acepto recibir el informe y ser contactado por Operux respecto a mi diagnóstico.</label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-dark btn-lg" style="margin-top:28px;width:100%;">Generar Informe Completo</button>
+    </form>`;
+
+  const form = document.getElementById('lead-form');
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    let valid = true;
+    form.querySelectorAll('.field').forEach(f=>{
+      const input = f.querySelector('input,select,textarea');
+      if(input && input.hasAttribute('required')){
+        const ok = input.type==='checkbox' ? input.checked : input.value.trim().length>0 && (input.type!=='email' || /\S+@\S+\.\S+/.test(input.value));
+        f.classList.toggle('error', !ok);
+        if(!ok) valid=false;
+      }
+    });
+    if(!valid) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.indice = score;
+    data.clasificacion = level;
+    submitLead(data);
+  });
+}
+
+function renderSubmitLoader(){
+  const lines = ["Compilando informe...","Creando PDF...","Preparando correo...","Sincronizando datos...","Guardando diagnóstico...","Proceso completado."];
+  diagShell.innerHTML = `
+    <div class="loader-screen">
+      ${lines.map((l,i)=>`<div class="loader-line" id="sl-${i}">${l}</div>`).join('')}
+      <div class="loader-bar"><div class="f" id="sub-fill"></div></div>
+    </div>`;
+  requestAnimationFrame(()=> document.getElementById('sub-fill').style.width='100%');
+  let i=0;
+  const t = setInterval(()=>{
+    document.querySelectorAll('.loader-line').forEach(l=>l.classList.remove('active'));
+    const el = document.getElementById('sl-'+i);
+    if(el) el.classList.add('active');
+    i++;
+  }, 400);
+  return t;
+}
+
+function submitLead(data){
+  const t = renderSubmitLoader();
+
+  const adminPayload = {
+    to_email: ADMIN_EMAIL,
+    nombre: data.nombre, empresa: data.empresa, cargo: data.cargo,
+    correo: data.correo, whatsapp: data.whatsapp, empleados: data.empleados,
+    reto: data.reto || '—', indice: data.indice, clasificacion: data.clasificacion,
+    fecha: new Date().toLocaleString('es-VE')
+  };
+  const userPayload = {
+    to_email: data.correo, nombre: data.nombre, indice: data.indice, clasificacion: data.clasificacion
+  };
+
+  const ready = window.emailjs && EMAILJS_PUBLIC_KEY !== "TU_PUBLIC_KEY";
+  const sendAdmin = ready
+    ? emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, adminPayload)
+    : Promise.resolve();
+  const sendUser = ready
+    ? emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_USER, userPayload)
+    : Promise.resolve();
+
+  Promise.allSettled([sendAdmin, sendUser]).then(()=>{
+    clearInterval(t);
+    setTimeout(()=> renderSuccess(data), 1600);
+  });
+}
+
+function renderSuccess(data){
+  const msg = encodeURIComponent(`Hola. Acabo de completar el Diagnóstico Operativo en Operux. Recibí mi informe (Índice ${data.indice}/100) y me gustaría conversar sobre los resultados de mi empresa.`);
+  diagShell.innerHTML = `
+    <div class="success-screen">
+      <div class="check"><svg width="32" height="32" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h3>Diagnóstico completado correctamente.</h3>
+      <p>Tu informe ya fue enviado a <strong>${data.correo}</strong> y una copia quedó disponible para descarga inmediata.<br>Nuestro equipo ya recibió tu diagnóstico.</p>
+      <div class="success-actions">
+        <a href="https://wa.me/584128245940?text=${msg}" target="_blank" class="btn btn-primary btn-lg">Hablar con un Arquitecto Operativo</a>
+        <button class="btn btn-outline btn-lg" id="restart-diag">Volver a empezar</button>
+      </div>
+    </div>`;
+  document.getElementById('restart-diag').onclick = ()=>{ answers=[]; qIndex=-1; renderDiag(); };
+}
+
+renderDiag();
+
+/* =========================================================
+   MODALES — Método, Sistema, Diagnóstico, Manifiesto, Casos, Contacto, Privacidad, Términos
+========================================================= */
+const modalContent = {
+  metodo: `
+    <div class="modal-eyebrow">Método</div>
+    <h3>Arquitectura antes que automatización.</h3>
+    <p class="modal-lede">No implementamos herramientas al azar. Diseñamos un sistema operativo para tu empresa donde cada proceso tiene una función, cada dato tiene un destino y cada automatización genera un resultado medible.</p>
+    <p class="modal-lede">Nuestro trabajo consiste en construir la infraestructura que permite que tu empresa funcione con menos fricción, menos errores y mayor capacidad de crecimiento.</p>
+    <div class="modal-block">
+      <h4>Las 4 fases</h4>
+      <div class="modal-phase"><div class="pn">01</div><div class="pc"><h5>Diagnóstico</h5><p>Analizamos cómo funciona actualmente tu empresa. Detectamos cuellos de botella, tareas repetitivas, pérdidas de tiempo, errores humanos y oportunidades de automatización.</p></div></div>
+      <div class="modal-phase"><div class="pn">02</div><div class="pc"><h5>Arquitectura</h5><p>Diseñamos el sistema completo. Definimos procesos, flujos de información, inteligencia artificial, automatizaciones, integraciones y métricas.</p></div></div>
+      <div class="modal-phase"><div class="pn">03</div><div class="pc"><h5>Implementación</h5><p>Construimos toda la infraestructura. Configuramos automatizaciones, IA, CRM, bases de datos, paneles de control e integraciones.</p></div></div>
+      <div class="modal-phase"><div class="pn">04</div><div class="pc"><h5>Optimización</h5><p>Un sistema nunca deja de mejorar. Medimos resultados, corregimos puntos débiles y ampliamos la infraestructura conforme crece el negocio.</p></div></div>
+    </div>
+    <a href="#" class="btn btn-primary" style="margin-top:32px;" data-modal-open="contacto">Solicitar Diagnóstico</a>
+  `,
+  sistema: `
+    <div class="modal-eyebrow">Sistema</div>
+    <h3>Una empresa debería funcionar aunque el dueño no esté presente.</h3>
+    <p class="modal-lede">Construimos ecosistemas digitales donde personas, procesos e inteligencia artificial trabajan coordinadamente.</p>
+    <div class="modal-block">
+      <h4>Componentes</h4>
+      <div class="modal-cols">
+        <div><h5 style="font-size:15px;font-weight:600;">IA Estratégica</h5><ul class="modal-list"><li>Analiza información</li><li>Toma decisiones</li><li>Genera respuestas</li><li>Clasifica datos</li></ul></div>
+        <div><h5 style="font-size:15px;font-weight:600;">Automatizaciones</h5><ul class="modal-list"><li>Eliminan trabajo manual</li><li>Reducen errores</li><li>Ejecutan procesos automáticamente</li></ul></div>
+        <div><h5 style="font-size:15px;font-weight:600;">CRM Inteligente</h5><ul class="modal-list"><li>Centraliza clientes</li><li>Seguimiento automático</li><li>Embudos de ventas</li></ul></div>
+        <div><h5 style="font-size:15px;font-weight:600;">Dashboards</h5><ul class="modal-list"><li>Indicadores en tiempo real</li><li>Ventas</li><li>Operaciones</li><li>Productividad</li></ul></div>
+      </div>
+    </div>
+    <div class="modal-block">
+      <h4>Integraciones</h4>
+      <p>WhatsApp, Correo, Google, Notion, Airtable, ERP, APIs y cualquier software compatible.</p>
+    </div>
+  `,
+  'diagnostico-info': `
+    <div class="modal-eyebrow">Diagnóstico</div>
+    <h3>Antes de construir, entendemos el problema.</h3>
+    <p class="modal-lede">Nuestro diagnóstico identifica exactamente dónde está perdiendo dinero, tiempo y oportunidades tu empresa.</p>
+    <div class="modal-block">
+      <h4>Qué evaluamos</h4>
+      <ul class="modal-list">
+        <li>Procesos internos</li><li>Atención al cliente</li><li>Ventas</li><li>Seguimiento</li>
+        <li>Administración</li><li>Comunicación</li><li>Herramientas actuales</li>
+        <li>Nivel de automatización</li><li>Uso de IA</li><li>Escalabilidad</li>
+      </ul>
+    </div>
+    <div class="modal-block">
+      <h4>Resultado</h4>
+      <p>Recibirás un informe estratégico con:</p>
+      <ul class="modal-list"><li>Problemas detectados</li><li>Riesgos</li><li>Oportunidades</li><li>Prioridades</li><li>Plan de implementación</li></ul>
+    </div>
+    <a href="#diagnostico" class="btn btn-primary" style="margin-top:28px;" id="modal-go-diag">Comenzar Diagnóstico</a>
+  `,
+  manifiesto: `
+    <div class="modal-eyebrow">Manifiesto</div>
+    <h3>Las empresas del futuro no contratarán más personas para resolver problemas repetitivos. Construirán mejores sistemas.</h3>
+    <p class="modal-lede">En Operux creemos que la ventaja competitiva ya no depende únicamente del talento humano, sino de la calidad de la infraestructura empresarial.</p>
+    <p class="modal-lede">No vendemos automatizaciones. Diseñamos sistemas capaces de operar, aprender y escalar.</p>
+    <div class="modal-block">
+      <p style="font-size:17px;color:var(--white);">Porque una empresa organizada crece.<br>Una empresa automatizada escala.<br>Una empresa inteligente lidera.</p>
+    </div>
+  `,
+  casos: `
+    <div class="modal-eyebrow">Casos</div>
+    <h3>Resultados reales.</h3>
+    <p class="modal-lede">Cada proyecto busca el mismo objetivo: reducir trabajo manual, eliminar errores, ahorrar tiempo y aumentar ingresos.</p>
+    <div class="modal-block">
+      <div class="modal-case"><h5>Empresa de servicios</h5><div class="stat">−80% trabajo administrativo · +45% velocidad de respuesta</div></div>
+      <div class="modal-case"><h5>Clínica</h5><div class="stat">Agenda automática · Recordatorios · Seguimiento de pacientes</div></div>
+      <div class="modal-case"><h5>Ventas</h5><div class="stat">CRM conectado con IA · Seguimiento automático · Mayor conversión</div></div>
+    </div>
+    <p style="margin-top:20px;font-size:13px;color:var(--gray);">Proyectos piloto — próximamente casos verificados con clientes reales.</p>
+  `,
+  contacto: `
+    <div class="modal-eyebrow">Contacto</div>
+    <h3>La transformación comienza con una conversación.</h3>
+    <p class="modal-lede">Cuéntanos cómo funciona tu empresa y prepararemos un diagnóstico estratégico.</p>
+    <form class="modal-form" id="modal-contact-form">
+      <div class="form-grid">
+        <div class="field"><label>Nombre</label><input type="text" name="nombre" required></div>
+        <div class="field"><label>Empresa</label><input type="text" name="empresa" required></div>
+        <div class="field"><label>Cargo</label><input type="text" name="cargo" required></div>
+        <div class="field"><label>Correo</label><input type="email" name="correo" required></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" name="whatsapp" required></div>
+        <div class="field"><label>Número de empleados</label><input type="text" name="empleados"></div>
+        <div class="field full"><label>¿Qué problema deseas resolver?</label><textarea name="problema"></textarea></div>
+      </div>
+      <button type="submit" class="btn btn-dark">Solicitar diagnóstico</button>
+    </form>
+  `,
+  privacidad: `
+    <div class="modal-eyebrow">Privacidad</div>
+    <h3>Operux protege la información de todos sus clientes.</h3>
+    <p class="modal-lede">Los datos recopilados se utilizan únicamente para realizar diagnósticos, prestar nuestros servicios y mantener la comunicación comercial.</p>
+    <p class="modal-lede">Nunca compartimos información con terceros sin autorización.</p>
+  `,
+  terminos: `
+    <div class="modal-eyebrow">Términos</div>
+    <h3>Al contratar Operux aceptas que cada proyecto tiene un alcance previamente definido.</h3>
+    <p class="modal-lede">Los tiempos de entrega, soporte y condiciones económicas serán establecidos dentro del contrato de prestación de servicios firmado entre ambas partes.</p>
+    <p class="modal-lede">La propiedad intelectual de los desarrollos será determinada según lo establecido en dicho contrato.</p>
+  `
+};
+
+const modalOverlay = document.getElementById('modal-overlay');
+const modalBox = document.getElementById('modal-box');
+const modalContentEl = document.getElementById('modal-content');
+
+function openModal(key){
+  if(!modalContent[key]) return;
+  modalContentEl.innerHTML = modalContent[key];
+  modalOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  const goDiag = document.getElementById('modal-go-diag');
+  if(goDiag) goDiag.addEventListener('click', ()=> closeModal());
+
+  modalContentEl.querySelectorAll('[data-modal-open]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.preventDefault(); openModal(btn.dataset.modalOpen); });
+  });
+
+  const contactForm = document.getElementById('modal-contact-form');
+  if(contactForm){
+    contactForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(contactForm).entries());
+      const ready = window.emailjs && EMAILJS_PUBLIC_KEY !== "TU_PUBLIC_KEY";
+      if(ready){
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, {to_email: ADMIN_EMAIL, ...data});
+      }
+      modalContentEl.innerHTML = `
+        <div class="modal-eyebrow">Contacto</div>
+        <h3>Recibimos tu solicitud.</h3>
+        <p class="modal-lede">Nuestro equipo se pondrá en contacto contigo a la brevedad. También puedes escribirnos directamente por WhatsApp.</p>
+        <a href="https://wa.me/584128245940?text=${encodeURIComponent('Hola, acabo de enviar mi solicitud de diagnóstico desde la página de Operux.')}" target="_blank" class="btn btn-primary" style="margin-top:24px;">Hablar por WhatsApp</a>
+      `;
+    });
+  }
+}
+
+function closeModal(){
+  modalOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('[data-modal]').forEach(el=>{
+  el.addEventListener('click', (e)=>{
+    e.preventDefault();
+    openModal(el.dataset.modal);
+  });
+});
+document.getElementById('modal-close').addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e)=>{ if(e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
